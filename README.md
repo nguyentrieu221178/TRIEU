@@ -1,2 +1,0 @@
-# A
-VẬT LÝ THPT
