@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thầy Nguyễn Văn Triệu - Bài 7: Đồ thị Độ dịch chuyển - Thời gian</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- HEADER -->
+  <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white/10 p-2 rounded-lg text-2xl">📊</div>
+        <div>
+          <h1 class="text-lg md:text-xl font-extrabold tracking-tight">Thầy Nguyễn Văn Triệu</h1>
+          <p class="text-xs text-indigo-200">Vật lí 10 - Bài 7: Đồ thị Độ dịch chuyển - Thời gian (KNTT)</p>
+        </div>
+      </div>
+      <div id="user-status-bar" class="flex items-center space-x-3">
+        <!-- Replaced dynamically by JS -->
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="screen-login" class="max-w-md mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-8">
+      <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white text-center">
+        <h2 class="text-2xl font-bold">CỔNG ĐĂNG NHẬP</h2>
+        <p class="text-xs text-indigo-100 mt-1">Bài 7: Đồ thị Độ dịch chuyển - Thời gian</p>
+      </div>
+
+      <!-- TAB SWITCH -->
+      <div class="flex border-b border-slate-200">
+        <button id="tab-student-btn" onclick="switchLoginTab('student')" class="flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 transition">Học sinh</button>
+        <button id="tab-teacher-btn" onclick="switchLoginTab('teacher')" class="flex-1 py-3 text-sm font-semibold text-slate-500 transition">Giáo viên</button>
+      </div>
+
+      <!-- STUDENT FORM -->
+      <form id="form-student-login" onsubmit="handleStudentLogin(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Họ và tên học sinh</label>
+          <input type="text" id="std-fullname" required placeholder="Ví dụ: Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Lớp học</label>
+          <input type="text" id="std-class" required placeholder="Ví dụ: 10A1" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mật khẩu (Cấu trúc: tên@123)</label>
+          <input type="password" id="std-pass" required placeholder="Ví dụ: a@123" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+          <p class="text-[11px] text-slate-500 mt-1">* Lưu ý: Mật khẩu là tên của bạn kết hợp với @123 (Ví dụ: tên "An" -> mật khẩu "an@123")</p>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition text-sm">ĐĂNG NHẬP VÀO BÀI HỌC</button>
+      </form>
+
+      <!-- TEACHER FORM -->
+      <form id="form-teacher-login" onsubmit="handleTeacherLogin(event)" class="p-6 space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tài khoản Giáo viên</label>
+          <input type="text" id="tch-user" required placeholder="admin" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mật khẩu</label>
+          <input type="password" id="tch-pass" required placeholder="admin@123" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-sm">
+        </div>
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-md transition text-sm">ĐĂNG NHẬP QUẢN TRỊ</button>
+      </form>
+    </div>
+
+    <!-- 2. TEACHER DASHBOARD SCREEN -->
+    <div id="screen-teacher" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">DANH SÁCH KẾT QUẢ BÀI LÀM - BÀI 7: ĐỒ THỊ d - t</h2>
+          <p class="text-xs text-slate-500">Quản lý theo dõi tiến độ và đánh giá chi tiết từ AI</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <select id="filter-class-select" onchange="renderTeacherSubmissions()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
+            <option value="ALL">Tất cả các lớp</option>
+          </select>
+          <button onclick="clearAllData()" class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold rounded-lg transition">Xóa toàn bộ dữ liệu</button>
+        </div>
+      </div>
+
+      <!-- STATS SUMMARY -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-center">
+          <p class="text-xs font-bold text-indigo-500 uppercase">Tổng số bài nộp</p>
+          <p id="stat-total-submissions" class="text-2xl font-black text-indigo-700 mt-1">0</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center">
+          <p class="text-xs font-bold text-emerald-500 uppercase">Điểm trung bình</p>
+          <p id="stat-avg-score" class="text-2xl font-black text-emerald-700 mt-1">0.0 / 10</p>
+        </div>
+        <div class="bg-purple-50 border border-purple-100 p-4 rounded-xl text-center">
+          <p class="text-xs font-bold text-purple-500 uppercase">Tỷ lệ Đạt (≥ 5.0)</p>
+          <p id="stat-pass-rate" class="text-2xl font-black text-purple-700 mt-1">0%</p>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 text-xs uppercase font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Thời gian</th>
+                <th class="py-3 px-4">Họ và Tên</th>
+                <th class="py-3 px-4">Lớp</th>
+                <th class="py-3 px-4 text-center">Số câu đúng</th>
+                <th class="py-3 px-4 text-center">Điểm số</th>
+                <th class="py-3 px-4">Đánh giá AI</th>
+              </tr>
+            </thead>
+            <tbody id="teacher-submissions-tbody" class="divide-y divide-slate-100">
+              <!-- Inserted dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. STUDENT QUIZ & APP SCREEN -->
+    <div id="screen-app" class="hidden space-y-6">
+      
+      <!-- TOP CONTROL & MODE SWITCH -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-2">
+          <button id="mode-quiz-btn" onclick="setAppMode('quiz')" class="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-sm">Chế độ Thử thách (30 câu)</button>
+          <button id="mode-sandbox-btn" onclick="setAppMode('sandbox')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">Mô phỏng Đồ thị d - t</button>
+        </div>
+        <div class="flex items-center space-x-3 text-xs font-bold text-slate-600">
+          <span>Tiến độ: <strong id="progress-text" class="text-indigo-600">1 / 30</strong></span>
+          <button onclick="toggleSound()" id="sound-btn" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg">🔊 Âm thanh ON</button>
+        </div>
+      </div>
+
+      <!-- CANVAS SIMULATION BOX -->
+      <div class="bg-white p-4 md:p-6 rounded-2xl shadow-md border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-sm text-slate-700 uppercase flex items-center gap-2">
+            <span>📈 Mô phỏng Đồ thị Độ dịch chuyển - Thời gian (d - t)</span>
+          </h3>
+          <div class="space-x-1">
+            <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-md">Đồ thị d - t</span>
+          </div>
+        </div>
+
+        <div class="relative w-full bg-slate-900 rounded-xl overflow-hidden shadow-inner flex flex-col items-center p-2">
+          <canvas id="simCanvas" width="800" height="320" class="w-full max-w-full h-auto cursor-pointer"></canvas>
+        </div>
+
+        <div class="flex justify-between items-center text-xs text-slate-500">
+          <span>* Đồ thị hiển thị mối quan hệ giữa độ dịch chuyển d và thời gian t. Đoạn nằm ngang tương ứng vật đứng yên.</span>
+          <button onclick="toggleSimAnimation()" id="anim-toggle-btn" class="px-3 py-1.5 bg-slate-800 text-white font-bold rounded-lg text-xs">Tạm dừng mô phỏng</button>
+        </div>
+      </div>
+
+      <!-- SANDBOX CONTROLS (Hidden in Quiz mode) -->
+      <div id="sandbox-controls" class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl space-y-4 hidden">
+        <h4 class="font-bold text-xs text-indigo-800 uppercase">Tùy chỉnh tham số Mô phỏng Đồ thị d - t</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Vận tốc chặng 1 ($v_1$): <span id="val-v1" class="font-bold text-indigo-600">10 m/s</span></label>
+            <input type="range" id="input-v1" min="-20" max="20" value="10" step="2" oninput="updateSandboxParams()" class="w-full">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Thời gian chạy chặng 1 ($t_1$): <span id="val-t1" class="font-bold text-indigo-600">4 s</span></label>
+            <input type="range" id="input-t1" min="1" max="10" value="4" step="1" oninput="updateSandboxParams()" class="w-full">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Thời gian nghỉ dừng ($t_{nghỉ}$): <span id="val-trest" class="font-bold text-indigo-600">3 s</span></label>
+            <input type="range" id="input-trest" min="0" max="8" value="3" step="1" oninput="updateSandboxParams()" class="w-full">
+          </div>
+        </div>
+      </div>
+
+      <!-- QUIZ QUESTION CONTAINER -->
+      <div id="quiz-container" class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 space-y-5">
+        <div class="flex justify-between items-start gap-4">
+          <div>
+            <span id="question-level-badge" class="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-xs font-extrabold rounded-full uppercase">Nhận biết</span>
+            <h3 id="question-text" class="text-base md:text-lg font-bold text-slate-800 mt-2">Câu hỏi sẽ hiển thị ở đây...</h3>
+          </div>
+        </div>
+
+        <!-- OPTIONS -->
+        <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Inserted dynamically -->
+        </div>
+
+        <!-- FEEDBACK & EXPLANATION -->
+        <div id="explanation-box" class="hidden p-4 rounded-xl border text-sm space-y-1">
+          <div id="feedback-title" class="font-bold"></div>
+          <p id="explanation-text" class="text-slate-600 text-xs md:text-sm"></p>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="flex justify-between items-center pt-2">
+          <button onclick="prevQuestion()" id="prev-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">Câu trước</button>
+          <button onclick="nextQuestion()" id="next-btn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">Câu tiếp theo ➔</button>
+          <button onclick="submitQuiz()" id="submit-btn" class="hidden px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition">NỘP BÀI TẤT CẢ</button>
+        </div>
+      </div>
+
+      <!-- AI EVALUATION MODAL / RESULT CARD -->
+      <div id="ai-result-card" class="hidden bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-2xl border border-indigo-500/30 space-y-6">
+        <div class="flex justify-between items-center border-b border-indigo-700/50 pb-4">
+          <div>
+            <span class="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30">AI CHẤM BÀI HOÀN TẤT</span>
+            <h3 class="text-xl font-black mt-2 text-white">KẾT QUẢ VÀ ĐÁNH GIÁ TỪ AI</h3>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-indigo-300">Điểm số đạt được</span>
+            <div id="ai-score-display" class="text-3xl font-black text-amber-400">0.0 / 10</div>
+          </div>
+        </div>
+
+        <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 space-y-3">
+          <h4 class="text-xs font-bold text-indigo-200 uppercase tracking-wider">🤖 Lời Nhận Xét Chi Tiết Từ AI:</h4>
+          <p id="ai-feedback-text" class="text-sm leading-relaxed text-indigo-100">AI đang phân tích bài làm...</p>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button onclick="restartQuiz()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 font-bold text-xs rounded-xl shadow-lg transition">Làm lại bài thi</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p>© 2026 Bản quyền thuộc về **Thầy Nguyễn Văn Triệu** - Chuyên môn Vật lí THPT</p>
+  </footer>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // 1. QUESTION BANK - BÀI 7: ĐỒ THỊ ĐỘ DỊCH CHUYỂN - THỜI GIAN (30 CÂU KNTT VẬT LÍ 10)
+    const QUESTION_BANK = [
+      // Nhận biết (1-8)
+      { id: 1, level: "Nhận biết", stem: "Đồ thị độ dịch chuyển - thời gian (d - t) biểu diễn mối quan hệ giữa đại lượng nào?", options: ["Quãng đường và thời gian", "Độ dịch chuyển và thời gian", "Vận tốc và thời gian", "Gia tốc và thời gian"], correct: 1, explanation: "Đồ thị d - t biểu diễn sự biến thiên của độ dịch chuyển d theo thời gian t.", params: { v1: 10, t1: 5, trest: 0 } },
+      { id: 2, level: "Nhận biết", stem: "Đồ thị độ dịch chuyển - thời gian của một vật chuyển động thẳng đều là đường gì?", options: ["Đường parabol", "Đường thẳng dốc lên hoặc dốc xuống", "Đường cong tròn", "Đường zig-zag"], correct: 1, explanation: "Trong chuyển động thẳng đều, d = v.t nên đồ thị d - t có dạng đường thẳng dốc nghiêng.", params: { v1: 12, t1: 4, trest: 0 } },
+      { id: 3, level: "Nhận biết", stem: "Trên đồ thị d - t, đường nằm ngang song song với trục thời gian Ot cho biết vật đang:", options: ["Chuyển động thẳng đều", "Đứng yên", "Chuyển động nhanh dần", "Đổi chiều chuyển động"], correct: 1, explanation: "Đường nằm ngang nghĩa là độ dịch chuyển d không đổi theo thời gian t, tức vật đứng yên (v = 0).", params: { v1: 0, t1: 5, trest: 5 } },
+      { id: 4, level: "Nhận biết", stem: "Vận tốc của vật được xác định từ độ dốc của đồ thị d - t bằng công thức nào?", options: ["v = Δd / Δt", "v = Δt / Δd", "v = Δd . Δt", "v = Δd + Δt"], correct: 0, explanation: "Độ dốc của đồ thị d - t bằng hệ số góc v = Δd / Δt, chính là vận tốc của chuyển động.", params: { v1: 15, t1: 3, trest: 0 } },
+      { id: 5, level: "Nhận biết", stem: "Nếu đồ thị d - t dốc lên từ trái sang phải (độ dốc dương), vận tốc của vật có giá trị:", options: ["v < 0", "v > 0", "v = 0", "v không xác định"], correct: 1, explanation: "Đồ thị dốc lên nghĩa là độ dịch chuyển tăng dần theo thời gian, suy ra vận tốc dương v > 0 (vật chuyển động theo chiều dương).", params: { v1: 10, t1: 4, trest: 0 } },
+      { id: 6, level: "Nhận biết", stem: "Nếu đồ thị d - t dốc xuống từ trái sang phải (độ dốc âm), vận tốc của vật có giá trị:", options: ["v > 0", "v < 0", "v = 0", "v tăng dần"], correct: 1, explanation: "Đồ thị dốc xuống nghĩa là độ dịch chuyển giảm dần theo thời gian, suy ra vận tốc âm v < 0 (vật chuyển động theo chiều âm).", params: { v1: -10, t1: 4, trest: 0 } },
+      { id: 7, level: "Nhận biết", stem: "Khi vẽ đồ thị độ dịch chuyển - thời gian, trục tung (trục đứng) biểu diễn đại lượng nào?", options: ["Thời gian t", "Độ dịch chuyển d", "Vận tốc v", "Tốc độ s"], correct: 1, explanation: "Trục tung Oy luôn biểu diễn độ dịch chuyển d (m hoặc km), trục hoành Ox biểu diễn thời gian t.", params: { v1: 8, t1: 5, trest: 0 } },
+      { id: 8, level: "Nhận biết", stem: "Trong đồ thị d - t, độ dốc càng lớn thì vận tốc của vật có đặc điểm gì?", options: ["Càng nhỏ", "Càng lớn", "Bằng 0", "Không đổi"], correct: 1, explanation: "Độ dốc (hệ số góc) biểu thị giá trị của vận tốc, do đó độ dốc càng lớn thì tốc độ di chuyển càng nhanh.", params: { v1: 20, t1: 3, trest: 0 } },
+
+      // Thông hiểu (9-15)
+      { id: 9, level: "Thông hiểu", stem: "Một đồ thị d - t có đoạn 1 dốc lên và đoạn 2 dốc xuống. Điều này chứng tỏ vật đã:", options: ["Chuyển động nhanh dần rồi chậm dần", "Đi theo chiều dương rồi đổi chiều đi theo chiều âm", "Đứng yên rồi chuyển động", "Gia tăng tốc độ gấp đôi"], correct: 1, explanation: "Đoạn dốc lên ứng với v > 0 (chiều dương), đoạn dốc xuống ứng với v < 0 (chiều âm), vậy vật đã đổi chiều chuyển động.", params: { v1: 12, t1: 4, trest: 0 } },
+      { id: 10, level: "Thông hiểu", stem: "Trên đồ thị d - t, tại thời điểm t = 2s có d = 10m và tại t = 6s có d = 30m. Vận tốc của vật là:", options: ["5 m/s", "10 m/s", "15 m/s", "2.5 m/s"], correct: 0, explanation: "v = Δd / Δt = (30 - 10) / (6 - 2) = 20 / 4 = 5 m/s.", params: { v1: 5, t1: 4, trest: 0 } },
+      { id: 11, level: "Thông hiểu", stem: "Đồ thị d - t của hai vật A và B là hai đường thẳng song song nhau. Kết luận nào sau đây ĐÚNG?", options: ["Vật A đi nhanh hơn vật B", "Hai vật có cùng vận tốc", "Hai vật xuất phát tại cùng một vị trí", "Vật B đi nhanh hơn vật A"], correct: 1, explanation: "Hai đường thẳng song song có cùng độ dốc (hệ số góc), do đó vận tốc của hai vật bằng nhau.", params: { v1: 10, t1: 5, trest: 0 } },
+      { id: 12, level: "Thông hiểu", stem: "Một đồ thị d - t bắt đầu từ vị trí d0 = -20m tại t = 0 và d = 0m tại t = 4s. Vận tốc của chuyển động là:", options: ["-5 m/s", "5 m/s", "10 m/s", "-10 m/s"], correct: 1, explanation: "v = (0 - (-20)) / (4 - 0) = 20 / 4 = 5 m/s.", params: { v1: 5, t1: 4, trest: 0 } },
+      { id: 13, level: "Thông hiểu", stem: "Quan sát đồ thị d - t gồm 3 giai đoạn: OA dốc lên, AB nằm ngang, BC dốc xuống. Giai đoạn vật dừng lại là:", options: ["Đoạn OA", "Đoạn AB", "Đoạn BC", "Cả 3 đoạn"], correct: 1, explanation: "Đoạn AB nằm ngang có độ dịch chuyển không đổi nên vận tốc v = 0, tức vật đang dừng lại nghỉ.", params: { v1: 10, t1: 4, trest: 3 } },
+      { id: 14, level: "Thông hiểu", stem: "Một vật có đồ thị d - t song song với trục hoành Ot nằm bên dưới trục Ot (d < 0). Trạng thái của vật là:", options: ["Đứng yên ở vị trí phía âm so với gốc tọa độ", "Chuyển động ngược chiều dương", "Chuyển động thẳng đều", "Chuyển động chậm dần"], correct: 0, explanation: "Đường song song Ot tương ứng vật đứng yên, d < 0 nghĩa là vị trí vật nằm ở vùng tọa độ âm so với gốc O.", params: { v1: 0, t1: 5, trest: 5 } },
+      { id: 15, level: "Thông hiểu", stem: "Đồ thị d - t cắt trục thời gian Ot tại thời điểm t1 có ý nghĩa gì?", options: ["Vật dừng lại tại t1", "Vật trở về gốc tọa độ (d = 0) tại t1", "Vận tốc bằng 0 tại t1", "Vật đạt tốc độ cực đại"], correct: 1, explanation: "Điểm cắt trục Ot có tọa độ d = 0, nghĩa là tại thời điểm t1 vật đang ở vị trí gốc tọa độ.", params: { v1: -8, t1: 4, trest: 0 } },
+
+      // Vận dụng (16-20)
+      { id: 16, level: "Vận dụng", stem: "Từ đồ thị d - t: t1 = 0s (d = 0), t2 = 3s (d = 12m), t3 = 5s (d = 12m). Vận tốc trung bình trong 5s đầu là:", options: ["2.4 m/s", "4.0 m/s", "0 m/s", "3.0 m/s"], correct: 0, explanation: "v_tb = Δd / Δt = (12 - 0) / (5 - 0) = 12 / 5 = 2.4 m/s.", params: { v1: 4, t1: 3, trest: 2 } },
+      { id: 17, level: "Vận dụng", stem: "Đồ thị d - t biểu diễn một ô tô: từ 0 đến 2h đi từ 0 đến 100km, từ 2h đến 3h dừng nghỉ. Tốc độ trung bình trên toàn bộ 3h là:", options: ["50 km/h", "33.3 km/h", "100 km/h", "25 km/h"], correct: 1, explanation: "v_tb = Tổng quãng đường / Tổng thời gian = 100 / 3 ≈ 33.3 km/h.", params: { v1: 15, t1: 4, trest: 2 } },
+      { id: 18, level: "Vận dụng", stem: "Vật đi từ A đến B có đồ thị d - t tăng từ 0 đến 40m trong 4s, sau đó giảm từ 40m về 10m trong 3s tiếp theo. Vận tốc ở chặng thứ hai là:", options: ["-10 m/s", "10 m/s", "-30 m/s", "30 m/s"], correct: 0, explanation: "v2 = Δd / Δt = (10 - 40) / (7 - 4) = -30 / 3 = -10 m/s.", params: { v1: 10, t1: 4, trest: 0 } },
+      { id: 19, level: "Vận dụng", stem: "Một đồ thị d - t gồm 2 đoạn: chặng 1 có vận tốc v1 = 12 m/s trong 5s, chặng 2 vật quay về gốc O trong 3s. Độ dịch chuyển cuối cùng là:", options: ["60 m", "0 m", "-60 m", "120 m"], correct: 1, explanation: "Chặng 2 vật quay về gốc O (d = 0), do đó tổng độ dịch chuyển d = 0m.", params: { v1: 12, t1: 5, trest: 0 } },
+      { id: 20, level: "Vận dụng", stem: "Hai xe 1 và 2 xuất phát từ gốc O có đồ thị d - t là hai đường thẳng hợp với trục Ot các góc lần lượt là 30° và 60°. Tỷ số vận tốc v2 / v1 là:", options: ["3", "1/3", "√3", "2"], correct: 0, explanation: "v = tan(α). v1 = tan(30°) = 1/√3; v2 = tan(60°) = √3. Tỷ số v2 / v1 = √3 / (1/√3) = 3.", params: { v1: 10, t1: 4, trest: 0 } },
+
+      // Vận dụng cao - Thực tế (21-30)
+      { id: 21, level: "Thực tế", stem: "Xe buýt di chuyển giữa hai trạm: chạy 8 phút (d tăng từ 0 lên 4km), dừng đón khách 2 phút (d = 4km). Đồ thị d - t biểu diễn chặng dừng đón khách có dạng:", options: ["Song song trục tung Od", "Song song trục hoành Ot", "Dốc nghiêng đi xuống", "Đường cong parabol"], correct: 1, explanation: "Thời gian xe dừng đón khách d không đổi (4km) nên đồ thị d - t là đoạn thẳng nằm ngang song song trục Ot.", params: { v1: 10, t1: 4, trest: 2 } },
+      { id: 22, level: "Thực tế", stem: "Một người tập chạy bộ ghi nhận dữ liệu GPS: chạy thẳng 2km trong 10 phút, nghỉ uống nước 5 phút, rồi chạy ngược về nhà 2km trong 12 phút. Thời điểm người đó quay về tới nhà đồ thị d - t ở mức:", options: ["d = 4 km", "d = 2 km", "d = 0 km", "d = -2 km"], correct: 2, explanation: "Khi quay trở về nhà (vị trí xuất phát), độ dịch chuyển bằng 0 (d = 0 km).", params: { v1: 12, t1: 4, trest: 2 } },
+      { id: 23, level: "Thực tế", stem: "Trên màn hình theo dõi chuyến bay, đường biểu diễn khoảng cách tới sân bay đích giảm dần đều theo thời gian ứng với đồ thị d - t có dạng:", options: ["Đường thẳng dốc xuống", "Đường thẳng dốc lên", "Đường nằm ngang", "Đường cong gãy gập"], correct: 0, explanation: "Khoảng cách tới điểm đích giảm dần đồng nghĩa với độ dịch chuyển giảm theo thời gian, biểu diễn bởi đường thẳng dốc xuống.", params: { v1: -15, t1: 5, trest: 0 } },
+      { id: 24, level: "Thực tế", stem: "Tàu hỏa xuất phát từ ga A đi được 30km hết 30 phút, đỗ tại ga B 10 phút, rồi đi tiếp 50km nữa hết 50 phút tới ga C. Tốc độ trung bình cả hành trình A-C là:", options: ["53.3 km/h", "60 km/h", "80 km/h", "40 km/h"], correct: 0, explanation: "Tổng s = 30 + 50 = 80km. Tổng t = 30 + 10 + 50 = 90 phút = 1.5 giờ. v_tb = 80 / 1.5 ≈ 53.3 km/h.", params: { v1: 15, t1: 3, trest: 2 } },
+      { id: 25, level: "Thực tế", stem: "Một bưu tá đi xe máy giao hàng: từ bưu cục đến nhà khách A (cách 3km mất 6 phút), dừng trả hàng 4 phút, đi tiếp đến nhà khách B (cách A 5km mất 10 phút). Đồ thị d - t có bao nhiêu đoạn nằm ngang?", options: ["0 đoạn", "1 đoạn", "2 đoạn", "3 đoạn"], correct: 1, explanation: "Có 1 lần dừng trả hàng tại nhà khách A nên đồ thị d - t sẽ có 1 đoạn nằm ngang song song trục Ot.", params: { v1: 10, t1: 3, trest: 2 } },
+      { id: 26, level: "Thực tế", stem: "Robot lau nhà tự động di chuyển từ trạm sạc ra xa 6m (trong 10s), dừng lau sàn (15s), rồi quay lại trạm sạc (10s). Vận tốc của robot ở chặng quay về là:", options: ["-0.6 m/s", "0.6 m/s", "0.4 m/s", "-0.4 m/s"], correct: 0, explanation: "Chặng quay về d giảm từ 6m về 0m trong 10s: v = (0 - 6) / 10 = -0.6 m/s.", params: { v1: 10, t1: 4, trest: 3 } },
+      { id: 27, level: "Thực tế", stem: "Quan sát đồ thị d - t của xe ô tô trên cao tốc: đoạn 1 dài 1 giờ đi 100km, đoạn 2 nằm ngang dài 0.5 giờ, đoạn 3 dài 1 giờ đi thêm 80km. Tổng quãng đường ô tô đi được là:", options: ["180 km", "100 km", "80 km", "260 km"], correct: 0, explanation: "Tổng quãng đường đi được s = 100km + 0km (nghỉ) + 80km = 180 km.", params: { v1: 16, t1: 4, trest: 2 } },
+      { id: 28, level: "Thực tế", stem: "Một vận động viên bơi lội bơi lượt đi 50m hết 20s, quay đầu bơi lượt về 50m hết 25s. Đồ thị d - t đạt giá trị cực đại d_max ở thời điểm:", options: ["t = 20 s", "t = 45 s", "t = 0 s", "t = 25 s"], correct: 0, explanation: "Lượt đi chạm mốc bơi 50m tại t = 20s, đây là điểm xa nhất (d_max = 50m) trước khi quay đầu bơi về.", params: { v1: 10, t1: 3, trest: 0 } },
+      { id: 29, level: "Thực tế", stem: "Đồ thị d - t của một ô tô đồ chơi điều khiển từ xa có dạng tam giác cân đỉnh ở (t = 5s, d = 10m). Tốc độ trung bình trên toàn bộ chuyến đi 10s là:", options: ["2.0 m/s", "1.0 m/s", "0 m/s", "4.0 m/s"], correct: 0, explanation: "Đi 10m hết 5s, quay về 10m hết 5s. Tổng quãng đường s = 20m, tổng t = 10s. Tốc độ trung bình = 20 / 10 = 2.0 m/s.", params: { v1: 10, t1: 4, trest: 0 } },
+      { id: 30, level: "Thực tế", stem: "Hệ thống camera giám sát hành trình vẽ đồ thị d - t của xe tải. Nếu đường biểu diễn nằm nghiêng càng dốc đứng thì chứng tỏ xe tải:", options: ["Chạy với tốc độ càng nhanh", "Đang phanh gấp dừng lại", "Chạy với tốc độ càng chậm", "Đang lùi xe"], correct: 0, explanation: "Đường biểu diễn càng dốc đứng tương ứng độ dốc (vận tốc) càng lớn, tức xe di chuyển càng nhanh.", params: { v1: 20, t1: 3, trest: 0 } }
+    ];
+
+    // 2. STATE MANAGEMENT
+    let currentUser = null; // { role: 'STUDENT'|'TEACHER', name: '', class: '' }
+    let currentMode = 'quiz'; // 'quiz' | 'sandbox'
+    let currentQuestionIdx = 0;
+    let userAnswers = new Array(30).fill(null);
+    let soundEnabled = true;
+
+    // Simulation params
+    let simParams = { v1: 10, t1: 4, trest: 3, v2: -8, t2: 4 };
+    let simTime = 0;
+    let animRunning = true;
+
+    // Audio Context
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (!soundEnabled) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'incorrect') {
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-btn').innerText = soundEnabled ? '🔊 Âm thanh ON' : '🔇 Âm thanh OFF';
+    }
+
+    // LOGIN LOGIC
+    function switchLoginTab(tab) {
+      if (tab === 'student') {
+        document.getElementById('form-student-login').classList.remove('hidden');
+        document.getElementById('form-teacher-login').classList.add('hidden');
+        document.getElementById('tab-student-btn').className = 'flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 transition';
+        document.getElementById('tab-teacher-btn').className = 'flex-1 py-3 text-sm font-semibold text-slate-500 transition';
+      } else {
+        document.getElementById('form-student-login').classList.add('hidden');
+        document.getElementById('form-teacher-login').classList.remove('hidden');
+        document.getElementById('tab-student-btn').className = 'flex-1 py-3 text-sm font-semibold text-slate-500 transition';
+        document.getElementById('tab-teacher-btn').className = 'flex-1 py-3 text-sm font-semibold text-purple-600 border-b-2 border-purple-600 transition';
+      }
+    }
+
+    function handleStudentLogin(e) {
+      e.preventDefault();
+      const name = document.getElementById('std-fullname').value.trim();
+      const cls = document.getElementById('std-class').value.trim();
+      const pass = document.getElementById('std-pass').value.trim().toLowerCase();
+
+      // Validate password format: name@123
+      const nameKey = name.split(' ').pop().toLowerCase(); // Lấy tên cuối
+      const expectedPass = nameKey + '@123';
+
+      if (pass !== expectedPass) {
+        alert(`Mật khẩu không đúng! Cấu trúc mật khẩu cho học sinh tên "${name}" là: ${expectedPass}`);
+        return;
+      }
+
+      currentUser = { role: 'STUDENT', name: name, class: cls };
+      updateUserStatusBar();
+      showScreen('app');
+      loadQuestion(0);
+    }
+
+    function handleTeacherLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('tch-user').value.trim();
+      const pass = document.getElementById('tch-pass').value.trim();
+
+      if (user === 'admin' && pass === 'admin@123') {
+        currentUser = { role: 'TEACHER', name: 'Giáo viên (Admin)', class: 'GV' };
+        updateUserStatusBar();
+        showScreen('teacher');
+        renderTeacherSubmissions();
+      } else {
+        alert('Tài khoản hoặc Mật khẩu Giáo viên không chính xác!');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('user-status-bar').innerHTML = '';
+      showScreen('login');
+    }
+
+    function updateUserStatusBar() {
+      const bar = document.getElementById('user-status-bar');
+      if (!currentUser) { bar.innerHTML = ''; return; }
+
+      bar.innerHTML = `
+        <div class="text-right text-xs">
+          <p class="font-bold text-white">${currentUser.name}</p>
+          <p class="text-indigo-200">${currentUser.role === 'TEACHER' ? 'Quản trị viên' : 'Lớp: ' + currentUser.class}</p>
+        </div>
+        <button onclick="logout()" class="px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-lg transition">Đăng xuất</button>
+      `;
+    }
+
+    function showScreen(screen) {
+      document.getElementById('screen-login').classList.add('hidden');
+      document.getElementById('screen-teacher').classList.add('hidden');
+      document.getElementById('screen-app').classList.add('hidden');
+
+      if (screen === 'login') document.getElementById('screen-login').classList.remove('hidden');
+      if (screen === 'teacher') document.getElementById('screen-teacher').classList.remove('hidden');
+      if (screen === 'app') document.getElementById('screen-app').classList.remove('hidden');
+    }
+
+    // APP & QUIZ LOGIC
+    function setAppMode(mode) {
+      currentMode = mode;
+      if (mode === 'quiz') {
+        document.getElementById('mode-quiz-btn').className = 'px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-sm';
+        document.getElementById('mode-sandbox-btn').className = 'px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition';
+        document.getElementById('sandbox-controls').classList.add('hidden');
+        document.getElementById('quiz-container').classList.remove('hidden');
+        loadQuestion(currentQuestionIdx);
+      } else {
+        document.getElementById('mode-sandbox-btn').className = 'px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-sm';
+        document.getElementById('mode-quiz-btn').className = 'px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition';
+        document.getElementById('sandbox-controls').classList.remove('hidden');
+        document.getElementById('quiz-container').classList.add('hidden');
+        updateSandboxParams();
+      }
+    }
+
+    function loadQuestion(idx) {
+      currentQuestionIdx = idx;
+      const q = QUESTION_BANK[idx];
+
+      // Update simulation params based on question
+      simParams = { ...q.params, v2: -8, t2: 4 };
+
+      document.getElementById('progress-text').innerText = `${idx + 1} / ${QUESTION_BANK.length}`;
+      document.getElementById('question-level-badge').innerText = q.level;
+      document.getElementById('question-text').innerText = `Câu ${q.id}: ${q.stem}`;
+
+      // Options
+      const grid = document.getElementById('options-grid');
+      grid.innerHTML = '';
+      q.options.forEach((opt, oIdx) => {
+        const btn = document.createElement('button');
+        const isSelected = userAnswers[idx] === oIdx;
+        btn.className = `p-4 text-left rounded-xl border text-xs md:text-sm font-semibold transition flex items-center justify-between ${
+          isSelected 
+            ? 'bg-indigo-50 border-indigo-600 text-indigo-700 font-bold shadow-sm' 
+            : 'bg-slate-50 border-slate-200 hover:bg-indigo-50/50 text-slate-700'
+        }`;
+        btn.innerHTML = `<span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>`;
+        btn.onclick = () => selectOption(oIdx);
+        grid.appendChild(btn);
+      });
+
+      // Explanation
+      const expBox = document.getElementById('explanation-box');
+      if (userAnswers[idx] !== null) {
+        expBox.classList.remove('hidden');
+        const isCorrect = userAnswers[idx] === q.correct;
+        expBox.className = `p-4 rounded-xl border text-sm ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`;
+        document.getElementById('feedback-title').innerText = isCorrect ? ' chính xác!' : ' Chưa chính xác!';
+        document.getElementById('explanation-text').innerText = q.explanation;
+      } else {
+        expBox.classList.add('hidden');
+      }
+
+      // Nav buttons
+      document.getElementById('prev-btn').disabled = idx === 0;
+      if (idx === QUESTION_BANK.length - 1) {
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('submit-btn').classList.remove('hidden');
+      } else {
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('submit-btn').classList.add('hidden');
+      }
+    }
+
+    function selectOption(oIdx) {
+      userAnswers[currentQuestionIdx] = oIdx;
+      const q = QUESTION_BANK[currentQuestionIdx];
+      if (oIdx === q.correct) playSound('correct');
+      else playSound('incorrect');
+      loadQuestion(currentQuestionIdx);
+    }
+
+    function prevQuestion() { if (currentQuestionIdx > 0) loadQuestion(currentQuestionIdx - 1); }
+    function nextQuestion() { if (currentQuestionIdx < QUESTION_BANK.length - 1) loadQuestion(currentQuestionIdx + 1); }
+
+    // AI GRADING & SUBMISSION
+    function submitQuiz() {
+      let correctCount = 0;
+      userAnswers.forEach((ans, idx) => {
+        if (ans === QUESTION_BANK[idx].correct) correctCount++;
+      });
+
+      const score = ((correctCount / QUESTION_BANK.length) * 10).toFixed(1);
+
+      // AI Analysis for Lesson 7
+      let aiFeedback = "";
+      if (score >= 8.5) {
+        aiFeedback = `Xuất sắc! Học sinh ${currentUser.name} đã nắm vững toàn bộ kiến thức Bài 7: Đồ thị độ dịch chuyển - thời gian. Kỹ năng xác định vận tốc từ độ dốc (v = Δd/Δt) và đọc các giai đoạn dừng nghỉ vô cùng chính xác!`;
+      } else if (score >= 6.5) {
+        aiFeedback = `Khá tốt! Học sinh ${currentUser.name} đọc thành thạo các đồ thị d - t dạng đường thẳng. Cần rèn luyện thêm kỹ năng tính vận tốc âm khi đồ thị dốc xuống hoặc các bài toán thực tế kết hợp thời gian nghỉ.`;
+      } else {
+        aiFeedback = `Cần cố gắng hơn! Học sinh ${currentUser.name} nên ôn lại lý thuyết Bài 7 SGK Kết nối tri thức: chú ý nhận biết đường nằm ngang là vật đứng yên (v = 0) và đồ thị dốc lên/xuống tương ứng với v > 0 và v < 0.`;
+      }
+
+      // Display AI Card
+      document.getElementById('ai-result-card').classList.remove('hidden');
+      document.getElementById('ai-score-display').innerText = `${score} / 10`;
+      document.getElementById('ai-feedback-text').innerText = aiFeedback;
+
+      // Save submission to localStorage
+      const submission = {
+        id: Date.now(),
+        studentName: currentUser.name,
+        studentClass: currentUser.class,
+        correctCount: correctCount,
+        totalQuestions: QUESTION_BANK.length,
+        score: parseFloat(score),
+        aiFeedback: aiFeedback,
+        submittedAt: new Date().toLocaleString('vi-VN')
+      };
+
+      let submissions = JSON.parse(localStorage.getItem('PHYSICS_LESSON7_SUBMISSIONS') || '[]');
+      submissions.unshift(submission);
+      localStorage.setItem('PHYSICS_LESSON7_SUBMISSIONS', JSON.stringify(submissions));
+
+      // Scroll to AI card
+      document.getElementById('ai-result-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function restartQuiz() {
+      userAnswers = new Array(30).fill(null);
+      document.getElementById('ai-result-card').classList.add('hidden');
+      loadQuestion(0);
+    }
+
+    // TEACHER DASHBOARD LOGIC
+    function renderTeacherSubmissions() {
+      let submissions = JSON.parse(localStorage.getItem('PHYSICS_LESSON7_SUBMISSIONS') || '[]');
+      const filterClass = document.getElementById('filter-class-select').value;
+
+      // Populate class select dropdown
+      const classSelect = document.getElementById('filter-class-select');
+      const classes = [...new Set(submissions.map(s => s.studentClass))];
+      classSelect.innerHTML = '<option value="ALL">Tất cả các lớp</option>';
+      classes.forEach(c => {
+        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+      classSelect.value = filterClass;
+
+      // Filter
+      if (filterClass !== 'ALL') {
+        submissions = submissions.filter(s => s.studentClass === filterClass);
+      }
+
+      // Stats
+      document.getElementById('stat-total-submissions').innerText = submissions.length;
+      if (submissions.length > 0) {
+        const avg = (submissions.reduce((acc, cur) => acc + cur.score, 0) / submissions.length).toFixed(1);
+        const passCount = submissions.filter(s => s.score >= 5.0).length;
+        const passRate = ((passCount / submissions.length) * 100).toFixed(0);
+
+        document.getElementById('stat-avg-score').innerText = `${avg} / 10`;
+        document.getElementById('stat-pass-rate').innerText = `${passRate}%`;
+      } else {
+        document.getElementById('stat-avg-score').innerText = '0.0 / 10';
+        document.getElementById('stat-pass-rate').innerText = '0%';
+      }
+
+      // Table Body
+      const tbody = document.getElementById('teacher-submissions-tbody');
+      tbody.innerHTML = '';
+
+      if (submissions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Chưa có dữ liệu bài nộp nào cho Bài 7.</td></tr>`;
+        return;
+      }
+
+      submissions.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-xs text-slate-400">${s.submittedAt}</td>
+          <td class="py-3 px-4 font-bold text-slate-800">${s.studentName}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-md">${s.studentClass}</span></td>
+          <td class="py-3 px-4 text-center font-semibold">${s.correctCount} / ${s.totalQuestions}</td>
+          <td class="py-3 px-4 text-center font-black ${s.score >= 8 ? 'text-emerald-600' : s.score >= 5 ? 'text-amber-600' : 'text-red-600'}">${s.score.toFixed(1)}</td>
+          <td class="py-3 px-4 text-xs text-slate-600 max-w-xs truncate" title="${s.aiFeedback}">${s.aiFeedback}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function clearAllData() {
+      if (confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu làm bài của học sinh?')) {
+        localStorage.removeItem('PHYSICS_LESSON7_SUBMISSIONS');
+        renderTeacherSubmissions();
+      }
+    }
+
+    // SIMULATION CANVAS RENDER FOR LESSON 7 (d - t GRAPH)
+    function updateSandboxParams() {
+      simParams.v1 = parseFloat(document.getElementById('input-v1').value);
+      simParams.t1 = parseFloat(document.getElementById('input-t1').value);
+      simParams.trest = parseFloat(document.getElementById('input-trest').value);
+
+      document.getElementById('val-v1').innerText = `${simParams.v1} m/s`;
+      document.getElementById('val-t1').innerText = `${simParams.t1} s`;
+      document.getElementById('val-trest').innerText = `${simParams.trest} s`;
+    }
+
+    function toggleSimAnimation() {
+      animRunning = !animRunning;
+      document.getElementById('anim-toggle-btn').innerText = animRunning ? 'Tạm dừng mô phỏng' : 'Tiếp tục mô phỏng';
+    }
+
+    function drawSimulation() {
+      const canvas = document.getElementById('simCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Grid background
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      // Total time calculation
+      const totalT = simParams.t1 + simParams.trest + simParams.t2;
+      if (animRunning) {
+        simTime += 0.05;
+        if (simTime > totalT) simTime = 0;
+      }
+
+      // Compute d at simTime
+      let d = 0;
+      let v = 0;
+      const d1 = simParams.v1 * simParams.t1;
+
+      if (simTime <= simParams.t1) {
+        v = simParams.v1;
+        d = simParams.v1 * simTime;
+      } else if (simTime <= simParams.t1 + simParams.trest) {
+        v = 0;
+        d = d1;
+      } else {
+        v = simParams.v2;
+        d = d1 + simParams.v2 * (simTime - simParams.t1 - simParams.trest);
+      }
+
+      // Render Axes
+      const originX = 60;
+      const originY = h / 2 + 20;
+      const scaleX = (w - 100) / totalT;
+      const scaleY = 3.5;
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      // Axis X (t)
+      ctx.beginPath(); ctx.moveTo(originX, originY); ctx.lineTo(w - 20, originY); ctx.stroke();
+      // Axis Y (d)
+      ctx.beginPath(); ctx.moveTo(originX, 20); ctx.lineTo(originX, h - 20); ctx.stroke();
+
+      // Axis labels
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 12px Inter';
+      ctx.fillText('t (s)', w - 30, originY + 15);
+      ctx.fillText('d (m)', originX - 35, 30);
+
+      // Draw d - t Curve
+      ctx.beginPath();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+
+      for (let t = 0; t <= totalT; t += 0.1) {
+        let ptD = 0;
+        if (t <= simParams.t1) {
+          ptD = simParams.v1 * t;
+        } else if (t <= simParams.t1 + simParams.trest) {
+          ptD = d1;
+        } else {
+          ptD = d1 + simParams.v2 * (t - simParams.t1 - simParams.trest);
+        }
+
+        const px = originX + t * scaleX;
+        const py = originY - ptD * scaleY;
+
+        if (t === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Current Time Dot
+      const currentPx = originX + simTime * scaleX;
+      const currentPy = originY - d * scaleY;
+
+      ctx.beginPath();
+      ctx.arc(currentPx, currentPy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Motion Track Representation
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(originX, 10, w - 100, 15);
+      const carX = originX + (d + 50) * 2;
+      ctx.fillStyle = v === 0 ? '#ef4444' : '#10b981';
+      ctx.fillRect(Math.max(originX, Math.min(w - 120, carX)), 12, 20, 11);
+
+      requestAnimationFrame(drawSimulation);
+    }
+
+    // INITIALIZATION
+    window.onload = () => {
+      showScreen('login');
+      requestAnimationFrame(drawSimulation);
+    };
+  </script>
+</body>
+</html>
